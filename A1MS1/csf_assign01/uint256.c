@@ -10,7 +10,7 @@
 UInt256 uint256_create_from_u32(uint32_t val) {
   UInt256 result;
   result.data[0] = val;
-  for (int i = 1; i <7; i++) {
+  for (int i = 1; i < 8; i++) {
     result.data[i] = 0;
   }
   return result;
@@ -18,10 +18,12 @@ UInt256 uint256_create_from_u32(uint32_t val) {
 
 // Create a UInt256 value from an array of NWORDS uint32_t values.
 // The element at index 0 is the least significant, and the element
-// at index 3 is the most significant.
+// at index 7 is the most significant.
 UInt256 uint256_create(const uint32_t data[8]) {
   UInt256 result;
-  // TODO: implement
+  for (int i = 0; i < 8; i++) {
+    result.data[i] = data[i];
+  }
   return result;
 }
 
