@@ -13,7 +13,6 @@ UInt256 uint256_create_from_u32(uint32_t val) {
   for (int i = 1; i < 8; i++) {
     result.data[i] = 0;
   }
-  //testing for git
   return result;
 }
 
