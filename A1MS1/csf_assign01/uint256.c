@@ -62,15 +62,30 @@ UInt256 uint256_create_from_hex(const char *hex) {
 // Return a dynamically-allocated string of hex digits representing the
 // given UInt256 value.
 char *uint256_format_as_hex(UInt256 val) {
-  char *hex = NULL;
-  char *buf = NULL;
-  for (int i = 0; i < 8; i ++) {
+  char *hex = (char *)malloc(65);
+  char *hex_chunk = hex;
+  //int zero_tracker = 1;
+  
+  int curr_hex = 0;
+  for (int i = 7; i >= 0; i--) {
     while(val.data[i]) {
       uint32_t current = val.data[i];
-      char *hex_chunk = sprintf(buf, "%x", current);
-      
+      curr_hex = sprintf(hex_chunk, "%X", current);
+
+      /*if (current!= 0 && zero_tracker) {
+	zero_tracker = 0;
+	}*/
+
+      hex_chunk += curr_hex;
+
     }
   }
+
+  if (hex_chunk == hex) {
+    *hex_chunk++ = '0';
+  }
+
+  *hex_chunk = '\0';
   return hex;
 }
 
