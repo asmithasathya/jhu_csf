@@ -163,9 +163,23 @@ void test_create_from_hex(TestObjs *objs) {
   ASSERT_SAME(objs->one, one);
 
   UInt256 new = uint256_create_from_hex("a");
-  //ASSERT_SAME(objs->one, one);
+  ASSERT(10 == new.data[0]);
+  ASSERT(0 == new.data[1]);
+  ASSERT(0 == new.data[7]);
 
   UInt256 new2 = uint256_create_from_hex("abcd1234");
+  ASSERT(2882343476 == new2.data[0]);
+  ASSERT(0 == new2.data[1]);
+  ASSERT(0 == new2.data[7]);
+
+  UInt256 new3 = uint256_create_from_hex("11abcd1234");
+  ASSERT(2882343476 == new3.data[0]);
+  ASSERT(17 == new3.data[1]);
+  ASSERT(0 == new3.data[2]);
+  ASSERT(0 == new3.data[7]);
+
+  UInt256 new4 = uint256_create_from_hex("fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+  ASSERT_SAME(objs->max, new4);
   
   UInt256 max = uint256_create_from_hex("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
   ASSERT_SAME(objs->max, max);
