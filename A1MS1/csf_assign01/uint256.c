@@ -29,8 +29,33 @@ UInt256 uint256_create(const uint32_t data[8]) {
 
 // Create a UInt256 value from a string of hexadecimal digits.
 UInt256 uint256_create_from_hex(const char *hex) {
-  UInt256 result;
-  // TODO: implement
+  UInt256 result = uint256_create_from_u32(0);
+
+  int hex_len = strlen(hex);
+  if (hex_len > 64) {
+    hex += hex_len - 64;
+    hex_len = 64;
+  }
+  
+  uint32_t chunk = 0;
+  int curr_index = hex_len - 1;
+
+  for (int i = 0; i < 8 && curr_index >= 0; i++) {
+    int chunk_size = 0;
+    if (curr_index >= 7) {
+      chunk_size = 8;
+    }
+    else {
+      chunk_size = curr_index + 1;
+    }
+    char hex_sub[9];
+    strncpy(hex_sub, hex + curr_index - chunk_size + 1, chunk_size);
+    hex_sub[chunk_size] = '\0';
+    chunk = strtoul(hex_sub, NULL, 16);
+    result.data[i] = chunk;
+    curr_index -= chunk_size;
+  }
+	 
   return result;
 }
 
@@ -38,7 +63,14 @@ UInt256 uint256_create_from_hex(const char *hex) {
 // given UInt256 value.
 char *uint256_format_as_hex(UInt256 val) {
   char *hex = NULL;
-  // TODO: implement
+  char *buf = NULL;
+  for (int i = 0; i < 8; i ++) {
+    while(val.data[i]) {
+      uint32_t current = val.data[i];
+      char *hex_chunk = sprintf(buf, "%x", current);
+      
+    }
+  }
   return hex;
 }
 

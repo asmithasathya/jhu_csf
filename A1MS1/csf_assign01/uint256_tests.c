@@ -157,13 +157,19 @@ void test_create(TestObjs *objs) {
 
 void test_create_from_hex(TestObjs *objs) {
   UInt256 zero = uint256_create_from_hex("0");
-  ASSERT_SAME(objs->zero, zero);
+    ASSERT_SAME(objs->zero, zero);
 
   UInt256 one = uint256_create_from_hex("1");
   ASSERT_SAME(objs->one, one);
 
+  UInt256 new = uint256_create_from_hex("a");
+  //ASSERT_SAME(objs->one, one);
+
+  UInt256 new2 = uint256_create_from_hex("abcd1234");
+  
   UInt256 max = uint256_create_from_hex("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
   ASSERT_SAME(objs->max, max);
+
 }
 
 void test_format_as_hex(TestObjs *objs) {
