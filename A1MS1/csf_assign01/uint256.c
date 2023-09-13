@@ -166,13 +166,9 @@ UInt256 uint256_rotate_left(UInt256 val, unsigned nbits) {
 
   int curr_val = 0;
   for (int i = 7; i >= 0; i--) {
-    //if (val.data[i]) {
-      uint32_t current = val.data[i];
-      curr_val = sprintf(val_chunk, "%08b", current);
-
-      val_chunk += curr_val;
-
-      //}
+    uint32_t current = val.data[i];
+    curr_val = sprintf(val_chunk, "%032b", current);
+    val_chunk += curr_val;
   }
   if (val_chunk == bin) {
     *val_chunk++ = '0';
@@ -180,17 +176,30 @@ UInt256 uint256_rotate_left(UInt256 val, unsigned nbits) {
   *val_chunk = '\0';
 
   int bin_len = strlen(bin);
+  unsigned final_nbits = nbits % 256; 
+  char sub_bin[final_nbits + 1];
 
-  char sub_bin[nbits + 1];
+  strncpy(sub_bin, bin, final_nbits);
+  sub_bin[final_nbits] = '\0';
 
-  strncpy(sub_bin, bin, nbits);
-  sub_bin[nbits] = '\0';
-
-  memmove(bin, bin + nbits, bin_len - nbits + 1);
+  memmove(bin, bin + final_nbits, bin_len - final_nbits + 1);
   strcat(bin, sub_bin);
 
+  int curr_index = 0;
+  
+  uint32_t chunk = 0;
   for (int i = 7; i >= 0; i--) {
+    char bin_32[32];
+    strncpy(bin_32, bin + curr_index, 32);
+
+    bin_32[32] = '\0';
+    chunk = strtoul(bin_32, NULL, 2);
+    result.data[i] = chunk;
+    curr_index += 32;
+    
   }
+
+  free(bin);
   return result;
 }
 
@@ -199,6 +208,46 @@ UInt256 uint256_rotate_left(UInt256 val, unsigned nbits) {
 // should be shifted back into the most significant bits.
 UInt256 uint256_rotate_right(UInt256 val, unsigned nbits) {
   UInt256 result;
-  // TODO: implement
+
+  char *bin = (char *)malloc(257);
+  char *val_chunk = bin;
+
+  int curr_val = 0;
+  for (int i = 7; i >= 0; i--) {
+    uint32_t current = val.data[i];
+    curr_val = sprintf(val_chunk, "%032b", current);
+    val_chunk += curr_val;
+  }
+  if (val_chunk == bin) {
+    *val_chunk++ = '0';
+  }
+  *val_chunk = '\0';
+
+  int bin_len = strlen(bin);
+  unsigned final_nbits = nbits % 256;
+  unsigned sub_end = 256 - final_nbits;
+  char sub_bin[sub_end + 1];
+
+  strncpy(sub_bin, bin, sub_end);
+  sub_bin[sub_end] = '\0';
+
+  memmove(bin, bin + sub_end, bin_len - sub_end + 1);
+  strcat(bin, sub_bin);
+
+  int curr_index = 0;
+
+  uint32_t chunk = 0;
+  for (int i = 7; i >= 0; i--) {
+    char bin_32[32];
+    strncpy(bin_32, bin + curr_index, 32);
+
+    bin_32[32] = '\0';
+    chunk = strtoul(bin_32, NULL, 2);
+    result.data[i] = chunk;
+    curr_index += 32;
+
+  }
+
+  free(bin);
   return result;
 }
