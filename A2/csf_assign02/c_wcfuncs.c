@@ -55,7 +55,12 @@ void wc_str_copy(unsigned char *dest, const unsigned char *source) {
 //   '\f'
 //   '\v'
 int wc_isspace(unsigned char c) {
-  // TODO: implement
+  if (c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f' || c == '\v') {
+    return 1;
+  }
+  else {
+    return 0;
+  }
 }
 
 // Return 1 if the character code in c is an alphabetic character
@@ -81,19 +86,67 @@ int wc_isalpha(unsigned char c) {
 // MAX_WORDLEN characters, then only the first MAX_WORDLEN
 // characters in the sequence should be stored in the array.
 int wc_readnext(FILE *in, unsigned char *w) {
-  // TODO: implement
+  if (!in) {
+    return 0;
+  }
+  else {
+    int curr;
+    int curr_len = 0;
+    do {
+      curr = fgetc(in);
+    } while (wc_isspace(curr) && curr != EOF);
+
+    while(!wc_isspace(curr) && curr != EOF) {
+      if (curr_len >= MAX_WORDLEN) {
+	*w = '\0';
+	return 1;
+      }
+      *w++ = curr;
+      curr_len++;
+      curr = fgetc(in);
+    }
+    *w = '\0';
+
+    if (curr_len >= MAX_WORDLEN) {
+      return 0;
+    }
+    else if (curr_len > 0) {
+      return 1;
+    }
+    else {
+      return 0;
+    }
+  }
 }
 
 // Convert the NUL-terminated character string in the array
 // pointed-to by w so that every letter is lower-case.
 void wc_tolower(unsigned char *w) {
-  // TODO: implement
+  while(*w != '\0') {
+    if (*w >= 'A' && *w <= 'Z') {
+      *w = *w + 32;
+    }
+    w++;
+  }
 }
 
 // Remove any non-alphaabetic characters from the end of the
 // NUL-terminated character string pointed-to by w.
 void wc_trim_non_alpha(unsigned char *w) {
-  // TODO: implement
+
+  int copy_len = 0;
+  unsigned char* copy = w;
+  while (*copy != '\0') {
+    copy++;
+    copy_len++;
+  }
+
+  copy--;
+  
+  while (!wc_isalpha(*copy) && copy_len > 0) {
+    *copy = '\0';
+    copy--;
+  }
 }
 
 // Search the specified linked list of WordEntry objects for an object
@@ -120,7 +173,11 @@ struct WordEntry *wc_find_or_insert(struct WordEntry *head, const unsigned char 
 // Returns a pointer to the WordEntry object in the appropriate linked list
 // which represents s.
 struct WordEntry *wc_dict_find_or_insert(struct WordEntry *buckets[], unsigned num_buckets, const unsigned char *s) {
-  // TODO: implement
+  unsigned int hash_s = 0;
+  hash_s = wc_hash(s);
+  
+
+  
 }
 
 // Free all of the nodes in given linked list of WordEntry objects.
