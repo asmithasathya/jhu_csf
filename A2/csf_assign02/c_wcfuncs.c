@@ -176,11 +176,31 @@ struct WordEntry *wc_dict_find_or_insert(struct WordEntry *buckets[], unsigned n
   unsigned int hash_s = 0;
   hash_s = wc_hash(s);
   
-
+  struct WordEntry *curr = buckets[hash_s];
   
+  while (curr != NULL) {
+    if (wc_str_compare(curr->word, s) == 0) {
+      return curr;
+    }
+    else {
+      curr = curr->next;
+    }
+  }
+
+  struct WordEntry *node = (struct WordEntry *) malloc(sizeof(struct WordEntry));
+  wc_str_copy(node->word, s);
+  node->count = 0;
+  node->next = buckets[hash_s];
+  buckets[hash_s] = node;
+
+  return node;
 }
 
 // Free all of the nodes in given linked list of WordEntry objects.
 void wc_free_chain(struct WordEntry *p) {
-  // TODO: implement
+  while (p != NULL) {
+    struct WordEntry *copy = p;
+    p = p->next;
+    free(copy);
+  }
 }
