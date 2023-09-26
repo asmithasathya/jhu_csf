@@ -57,10 +57,38 @@ wc_hash:
  */
 	.globl wc_str_compare
 wc_str_compare:
-	/* TODO: implement */
-	ret
+// loop to traverse through the strings and compare each character
+loop:	
+	movb	(%rdi), %al // store character from first string
+	movb	(%rsi), %dl //store character from second string
+	cmpb	%dl, %al //compare characters from both strings
+	jl	.L2 // jump to .L2 if character from first string is less than character from second string
+	jg	.L3 // jump to .L3 if character from first string is greater than character from second string
 
-/*
+	testb	%dl, %dl // test to check if reached the end of the first string
+	je	.L1 // jump to .L1 if both two characters are equal
+	
+	incq	%rdi // increment to the next character in the first string
+	incq	%rsi // increment to the next character in the second string
+	jmp	loop // jump back to the start of the loop to compare the next characters in the string
+
+// return 0 when strings are equal	
+.L1:
+	xorq	%rax, %rax // set rax to 0 since strings are equal
+	ret // return 0
+
+// return -1 when left string is less than right string
+.L2:
+	movq $-1, %rax // set rax to -1 since left string is smaller
+	ret // return -1
+
+// return 1 when left string is greater than right string
+.L3:
+	movq $1, %rax //set rax to 1 since left string is greater
+	ret //return 1
+
+
+	/*
  * Copy NUL-terminated source string to the destination buffer.
  *
  * C function prototype:

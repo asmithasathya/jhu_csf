@@ -121,6 +121,21 @@ void test_str_compare(TestObjs *objs) {
   ASSERT(wc_str_compare(objs->test_str_1, objs->test_str_1) == 0);
   ASSERT(wc_str_compare(objs->test_str_1, objs->test_str_4) < 0);
   ASSERT(wc_str_compare(objs->test_str_4, objs->test_str_1) > 0);
+  ASSERT(wc_str_compare(objs->test_str_1, (const unsigned char*) "three") < 0);
+  ASSERT(wc_str_compare(objs->test_str_1, (const unsigned char*) "three one") < 0);
+  ASSERT(wc_str_compare((const unsigned char*) "birds", objs->test_str_1) < 0);
+  ASSERT(wc_str_compare(objs->test_str_1, (const unsigned char*) "birds") > 0);
+  ASSERT(wc_str_compare((const unsigned char*) "aaa aa a", objs->test_str_1) < 0);
+  ASSERT(wc_str_compare(objs->test_str_1, objs->test_str_2) > 0);
+  ASSERT(wc_str_compare(objs->test_str_2, objs->test_str_1) < 0);
+  ASSERT(wc_str_compare(objs->test_str_1, objs->test_str_3) > 0);
+  ASSERT(wc_str_compare(objs->test_str_3, objs->test_str_1) < 0);
+  ASSERT(wc_str_compare(objs->test_str_1, (const unsigned char*) "2") > 0);
+  ASSERT(wc_str_compare((const unsigned char*) "84", objs->test_str_2) < 0);
+  ASSERT(wc_str_compare(objs->test_str_1, (const unsigned char*) " ") > 0);
+  ASSERT(wc_str_compare(objs->test_str_1, (const unsigned char*) "\n") > 0);
+  ASSERT(wc_str_compare(objs->test_str_1, (const unsigned char*) "") > 0);
+  ASSERT(wc_str_compare((const unsigned char*) "", (const unsigned char*) "") == 0);
 }
 
 void test_str_copy(TestObjs *objs) {
@@ -136,10 +151,16 @@ void test_isspace(TestObjs *objs) {
 
   ASSERT(1 == wc_isspace(' '));
   ASSERT(1 == wc_isspace('\t'));
+  ASSERT(1 == wc_isspace('\r'));
+  ASSERT(1 == wc_isspace('\n'));
+  ASSERT(1 == wc_isspace('\f'));
+  ASSERT(1 == wc_isspace('\v'));
 
   ASSERT(0 == wc_isspace('a'));
   ASSERT(0 == wc_isspace('.'));
   ASSERT(0 == wc_isspace('*'));
+  ASSERT(0 == wc_isspace('Z'));
+  ASSERT(0 == wc_isspace('5'));
 }
 
 void test_isalpha(TestObjs *objs) {
@@ -148,9 +169,17 @@ void test_isalpha(TestObjs *objs) {
 
   ASSERT(1 == wc_isalpha('x'));
   ASSERT(1 == wc_isalpha('F'));
-
+  ASSERT(1 == wc_isalpha('a'));
+  ASSERT(1 == wc_isalpha('z'));
+  ASSERT(1 == wc_isalpha('A'));
+  ASSERT(1 == wc_isalpha('Z'));
+  
   ASSERT(0 == wc_isalpha('0'));
   ASSERT(0 == wc_isalpha(','));
+  ASSERT(0 == wc_isalpha(' '));
+  ASSERT(0 == wc_isalpha('\t'));
+  ASSERT(0 == wc_isalpha('\n'));
+  ASSERT(0 == wc_isalpha('/'));
 }
 
 void test_readnext(TestObjs *objs) {
@@ -183,6 +212,26 @@ void test_readnext(TestObjs *objs) {
   ASSERT(0 == wc_readnext(in, buf));
 
   fclose(in);
+
+  in = create_input_file(objs->test_str_3);
+  ASSERT(1 == wc_readnext(in, buf));
+  ASSERT(0 == strcmp("O_O...", (const char *) buf));
+  ASSERT(0 == wc_readnext(in, buf));
+  fclose(in);
+
+  in = create_input_file((const unsigned char *) " ");
+  ASSERT(0 == wc_readnext(in, buf));
+  fclose(in);
+
+  in = create_input_file((const unsigned char *) "    ");
+  ASSERT(0 == wc_readnext(in, buf));
+  fclose(in);
+
+  in = create_input_file((const unsigned char *) "  .  ");
+  ASSERT(1 == wc_readnext(in, buf));
+  ASSERT(0 == strcmp(".", (const char *) buf));
+  ASSERT(0 == wc_readnext(in, buf));
+  fclose(in);
 }
 
 void test_tolower(TestObjs *objs) {
@@ -191,6 +240,22 @@ void test_tolower(TestObjs *objs) {
   strcpy((char *) buf, (char *) objs->test_str_2);
   wc_tolower(buf);
   ASSERT(0 == strcmp("this is a sentence with_mixed case.", (char *) buf));
+
+  strcpy((char *) buf, (char *) "ALL CAPITALS");
+  wc_tolower(buf);
+  ASSERT(0 == strcmp("all capitals", (char *) buf));
+
+  strcpy((char *) buf, (char *) "all lowercase");
+  wc_tolower(buf);
+  ASSERT(0 == strcmp("all lowercase", (char *) buf));
+
+  strcpy((char *) buf, (char *) " ");
+  wc_tolower(buf);
+  ASSERT(0 == strcmp(" ", (char *) buf));
+
+  strcpy((char *) buf, (char *) " A ");
+  wc_tolower(buf);
+  ASSERT(0 == strcmp(" a ", (char *) buf));
 }
 
 void test_trim_non_alpha(TestObjs *objs) {
@@ -200,13 +265,53 @@ void test_trim_non_alpha(TestObjs *objs) {
   ASSERT(0 == strcmp("O_O...", (const char *) buf));
   wc_trim_non_alpha(buf);
   ASSERT(0 == strcmp("O_O", (const char *) buf));
+
+  strcpy((char *) buf, (const char *) "abcd1234");
+  ASSERT(0 == strcmp("abcd1234", (const char *) buf));
+  wc_trim_non_alpha(buf);
+  ASSERT(0 == strcmp("abcd", (const char *) buf));
+
+  strcpy((char *) buf, (const char *) "ab cd12");
+  ASSERT(0 == strcmp("ab cd12", (const char *) buf));
+  wc_trim_non_alpha(buf);
+  ASSERT(0 == strcmp("ab cd", (const char *) buf));
+
+  strcpy((char *) buf, (const char *) "abcd    ");
+  ASSERT(0 == strcmp("abcd    ", (const char *) buf));
+  wc_trim_non_alpha(buf);
+  ASSERT(0 == strcmp("abcd", (const char *) buf));
+
+  strcpy((char *) buf, (const char *) "abcd . ");
+  ASSERT(0 == strcmp("abcd . ", (const char *) buf));
+  wc_trim_non_alpha(buf);
+  ASSERT(0 == strcmp("abcd", (const char *) buf));
+
+  strcpy((char *) buf, (const char *) "1234");
+  ASSERT(0 == strcmp("1234", (const char *) buf));
+  wc_trim_non_alpha(buf);
+  ASSERT(0 == strcmp("", (const char *) buf));
+
+  strcpy((char *) buf, (const char *) "12ab34");
+  ASSERT(0 == strcmp("12ab34", (const char *) buf));
+  wc_trim_non_alpha(buf);
+  ASSERT(0 == strcmp("12ab", (const char *) buf));
+
+  strcpy((char *) buf, (const char *) "  ab  ");
+  ASSERT(0 == strcmp("  ab  ", (const char *) buf));
+  wc_trim_non_alpha(buf);
+  ASSERT(0 == strcmp("  ab", (const char *) buf));
+
+  strcpy((char *) buf, (const char *) "***");
+  ASSERT(0 == strcmp("***", (const char *) buf));
+  wc_trim_non_alpha(buf);
+  ASSERT(0 == strcmp("", (const char *) buf));
 }
 
 void test_find_or_insert(TestObjs *objs) {
   (void) objs;
 
   struct WordEntry *list = NULL;
-  int inserted;
+  int inserted = 0;
 
   struct WordEntry *p;
 
@@ -239,6 +344,8 @@ void test_find_or_insert(TestObjs *objs) {
   ASSERT(0 == strcmp("ax's", (const char *) p->word));
   ASSERT(1 == p->count);
   ++p->count;
+
+  wc_free_chain(p);
 }
 
 void test_dict_find_or_insert(TestObjs *objs) {
@@ -256,7 +363,7 @@ void test_dict_find_or_insert(TestObjs *objs) {
   ASSERT(dict[4] == NULL);
   ASSERT(p->count == 0);
   ++p->count;
-
+  
   p = wc_dict_find_or_insert(dict, 5, (const unsigned char *) "ax's");
   ASSERT(dict[0] == NULL);
   ASSERT(dict[1] != NULL);
@@ -287,7 +394,7 @@ void test_dict_find_or_insert(TestObjs *objs) {
   ASSERT(dict[4] == NULL);
   ASSERT(p->count == 1);
   ++p->count;
-
+  
   // "marmoset" should go in bucket 2
   p = wc_dict_find_or_insert(dict, 5, (const unsigned char *) "marmoset");
   ASSERT(dict[0] != NULL);
@@ -298,7 +405,7 @@ void test_dict_find_or_insert(TestObjs *objs) {
   ASSERT(dict[4] == NULL);
   ASSERT(p->count == 0);
   ++p->count;
-
+  
   // "coelacanth" should go in bucket 3
   p = wc_dict_find_or_insert(dict, 5, (const unsigned char *) "coelacanth");
   ASSERT(dict[0] != NULL);
@@ -309,6 +416,10 @@ void test_dict_find_or_insert(TestObjs *objs) {
   ASSERT(dict[4] == NULL);
   ASSERT(p->count == 0);
   ++p->count;
+
+  for (unsigned i = 0; i < 5; i++) {
+    wc_free_chain(dict[i]);
+  }
 }
 
 void test_free_chain(TestObjs *objs) {

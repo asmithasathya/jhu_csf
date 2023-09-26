@@ -21,7 +21,12 @@
 // Note that the character values should be treated as
 // being unsigned (in the range 0..255)
 uint32_t wc_hash(const unsigned char *w) {
-  // TODO: implement
+  uint32_t hash_code = 5381;
+  while (*w != '\0') {
+    hash_code = (uint32_t) hash_code * 33 + *w;
+    w++;
+  }
+  return hash_code;
 }
 
 // Compare two strings lexicographically. Return
@@ -35,12 +40,36 @@ uint32_t wc_hash(const unsigned char *w) {
 // of the other, it is considered as "less than". E.g.,
 // "hi" would compare as less than "high".
 int wc_str_compare(const unsigned char *lhs, const unsigned char *rhs) {
-  // TODO: implement
+  if (lhs == NULL && rhs == NULL) {
+    return 0;
+  }
+  while (*lhs != '\0' && *rhs != '\0') {
+    if (*lhs < *rhs) {
+      return  -1;
+    } else if (*lhs > *rhs) {
+      return 1;
+    }
+    lhs++;
+    rhs++;
+  }
+
+  if (*lhs == '\0' && *rhs != '\0') {
+    return -1;
+  } else if (*lhs != '\0' && *rhs == '\0') {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 // Copy NUL-terminated source string to the destination buffer.
 void wc_str_copy(unsigned char *dest, const unsigned char *source) {
-  // TODO: implement
+  while (*source != '\0') {
+    *dest = *source;
+    dest++;
+    source++;
+  }
+  *dest = '\0';
 }
 
 // Return 1 if the character code in c is a whitespace character,
@@ -146,6 +175,7 @@ void wc_trim_non_alpha(unsigned char *w) {
   while (!wc_isalpha(*copy) && copy_len > 0) {
     *copy = '\0';
     copy--;
+    copy_len--;
   }
 }
 
@@ -161,8 +191,29 @@ void wc_trim_non_alpha(unsigned char *w) {
 // by inserted to 1, and return a pointer to the new node. Note that
 // the new node should have its count value set to 0. (It is the caller's
 // job to update the count.)
-struct WordEntry *wc_find_or_insert(struct WordEntry *head, const unsigned char *s, int *inserted) {
-  // TODO: implement
+struct WordEntry *wc_find_or_insert(struct WordEntry *head, const unsigned char *s, int *inserted) {  
+  struct WordEntry *curr = head;
+  while (curr != NULL) {
+     if (wc_str_compare(curr->word, s) == 0) {
+       *inserted = 0;
+       return curr;
+     }
+     curr = curr->next;
+  }
+
+
+  struct WordEntry *node = (struct WordEntry *) malloc(sizeof(struct WordEntry));
+  wc_str_copy(node->word, s);
+  node->count = 0;
+  if (head == NULL) {
+    head = node;
+    *inserted = 1;
+    return node;
+  }
+  node->next = head;
+  head = node;
+  *inserted = 1;
+  return node;
 }
 
 // Find or insert the WordEntry object for the given string (s), returning
@@ -174,7 +225,7 @@ struct WordEntry *wc_find_or_insert(struct WordEntry *head, const unsigned char 
 // which represents s.
 struct WordEntry *wc_dict_find_or_insert(struct WordEntry *buckets[], unsigned num_buckets, const unsigned char *s) {
   unsigned int hash_s = 0;
-  hash_s = wc_hash(s);
+  hash_s = wc_hash(s) % num_buckets;
   
   struct WordEntry *curr = buckets[hash_s];
   
@@ -192,7 +243,7 @@ struct WordEntry *wc_dict_find_or_insert(struct WordEntry *buckets[], unsigned n
   node->count = 0;
   node->next = buckets[hash_s];
   buckets[hash_s] = node;
-
+  
   return node;
 }
 
